@@ -66,6 +66,7 @@ $GLOBALS['wgSamlGroupMap'] = array(
 		'groups' => array( 'admin' ),
 	),
 );
+$GLOBALS['wgSamlGroupMapRegex'] = array();
 
 $GLOBALS['wgSamlUsernameAttr'] = 'uid';
 $GLOBALS['wgSamlRealnameAttr'] = 'cn';
