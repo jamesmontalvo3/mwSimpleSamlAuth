@@ -447,20 +447,16 @@ class SimpleSamlAuth {
 	 * @param string[][] $attr SAML attributes
 	 */
 	protected static function updateUser( User $user, $attr ) {
-		global $wgSamlRealnameAttr;
 		global $wgSamlUsernameAttr;
 		global $wgSamlMailAttr;
 		global $wgContLang;
 		global $wgVersion;
 
 		$changed = false;
-		if ( isset( $wgSamlRealnameAttr )
-			&& isset( $attr[$wgSamlRealnameAttr] )
-			&& $attr[$wgSamlRealnameAttr]
-			&& $user->getRealName() !== reset( $attr[$wgSamlRealnameAttr] )
-		) {
+		$newRealname = self::formatRealName( $user, $attr );
+		if ( $newRealname !== false && $user->getRealName() !== $newRealname ) {
 			$changed = true;
-			$user->setRealName( reset( $attr[$wgSamlRealnameAttr] ) );
+			$user->setRealName( $newRealname );
 		}
 		if ( isset( $wgSamlMailAttr )
 			&& isset( $attr[$wgSamlMailAttr] )
@@ -487,6 +483,26 @@ class SimpleSamlAuth {
 			}
 		} elseif ( $changed ) {
 			$user->saveSettings();
+		}
+	}
+
+	public static function formatRealName( User $user, $attr ) {
+		global $wgSamlRealnameAttr;
+
+		if ( isset( $wgSamlRealnameAttr )
+			&& is_string( $wgSamlRealnameAttr )
+			&& isset( $attr[$wgSamlRealnameAttr] )
+			&& $attr[$wgSamlRealnameAttr]
+		) {
+			return reset( $attr[$wgSamlRealnameAttr] );
+		}
+		else if ( isset( $wgSamlRealnameAttr )
+			&& is_callable( $wgSamlRealnameAttr )
+		) {
+			return call_user_func_array( $wgSamlRealnameAttr, [ $user, $attr ] );
+		}
+		else {
+			return false;
 		}
 	}
 
